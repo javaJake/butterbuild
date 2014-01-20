@@ -3,8 +3,6 @@ import os
 import re
 import subprocess
 
-from services.fs import Node
-
 def getUnit(node):
     if not node.path.endswith('.java'):
         return None

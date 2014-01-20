@@ -1,2 +1,2 @@
-__all__ = ["events", "sourcedir"]
+__all__ = ["fs"]
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

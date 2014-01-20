@@ -5,9 +5,8 @@ import os
 
 from unit import java
 from services.events import EventRouter
-from services.fs import split_path, path_to_node, Node
+from helper.fs import split_path, path_to_node, Node
 from services.sourcedir import SourceDir
-from services.depgraph import DepGraph
 from threading import Thread
     
 parser = argparse.ArgumentParser(description='Build stuff')

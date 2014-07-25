@@ -2,16 +2,7 @@ import os
 import threading
 
 # http://stackoverflow.com/a/4580931/387239
-#def os_path_split_asunder(path):
-#    components = [] 
-#    while True:
-#        (path,tail) = os.path.split(path)
-#        if tail == "":
-#            components.reverse()
-#            return components
-#        components.append(tail)
-
-def os_path_split_asunder(path, debug=False):
+def split_path(path, debug=False):
     parts = []
     while True:
         newpath, tail = os.path.split(path)
@@ -25,24 +16,73 @@ def os_path_split_asunder(path, debug=False):
     parts.reverse()
     return parts
 
+def get_root():
+    return os.path.abspath(os.sep)
 
-class Filesystem():
+class FileNotExistsError(Exception):
+    pass
 
-    def __init__(self):
-        self.cache = dict()
-        self.lock = threading.Lock()
+class Node():
 
-    def get(self, path):
-        path = os_path_split_asunder(os.path.abspath(path))
+    def __init__(self, root, parent, filename):
+        self.root = root
+        if root is None:
+            self.root = self
 
-        with self.lock:
-            i = 0
-            currCache = self.cache
-            print("Scanning ",path)
-            while i < len(path):
-                if not path[i] in currCache:
-                    currCache[path[i]] = os.listdir(os.path.join(*path[0:(i+1)]))
-                currCache = currCache[path[i]]
-                i+=1
+        self.parent = parent
+        self.filename = filename
+        self.__metadata = dict()
+        self.__children = dict()
+        self.__childrenlock = threading.Lock()
 
-            return currCache
+        if self.parent != None:
+            self.path = os.path.join(self.parent.path, self.filename)
+        else:
+            self.path = self.filename
+
+        if not os.path.exists(self.path):
+            raise FileNotExistsError(self.path)
+        elif os.path.abspath(self.path) != self.path:
+            raise ValueError("filename cannot be used in an absolute path, or includes more than one path element: "+str(filename))
+
+        if os.path.islink(self.path):
+            # resolve symbolic link
+            self.realpath = os.readlink(self.path)
+            realpathParts = split_path(self.realpath)
+            try:
+                currNode = self.root
+                for part in realpathParts[1:]:
+                    currNode = currNode.getChild(part)
+                # we now target another node
+                self.__target = currNode
+            except FileNotExistsError:
+                raise FileNotExistsError(self.path, "the symbolic link points to a non-existant path")
+        else:
+            self.realpath = self.path
+            self.__target = None
+
+    def getChild(self, filename):
+        if self.__target != None:
+            return self.__target.getChild(filename)
+
+        if not filename in self.__children:
+            with self.__childrenlock:
+                if not filename in self.__children:
+                    self.__children[filename] = Node(self.root, self, filename)
+
+        return self.__children[filename]
+
+    def getMeta(self, key):
+        if not key in self.__metadata:
+            if self.__target != None:
+                return self.__target.getMeta(key)
+            else:
+                return None
+        else:
+            return self.__metadata[key]
+
+    def setMeta(self, key, value):
+        if self.__target != None:
+            return self.__target.setMeta(key, value)
+
+        self.__metadata[key] = value

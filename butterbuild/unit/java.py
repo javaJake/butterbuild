@@ -1,12 +1,12 @@
-import BaseUnit
 import fnmatch
 import os
 
-class Java(BaseUnit):
+from services.fs import Node
 
-    def execute():
-        matches = []
-        return 0
+class Java:
 
-    def build():
-        return 0
+    def isUnit(self, node):
+        if node.path.endswith('.java'):
+            return True
+        else:
+            return False

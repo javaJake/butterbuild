@@ -1,25 +1,6 @@
 unit: {
-	Dependency=[Array[unit]],
-	Source=[Dir],
-	Build=[Dir],
-	run() {
-		foreach dependency {
-			unit = dependency.locate()
-			if (unit is not success) {
-				return { FAILURE, "Failed to locate dependency", unit }
-			}
+	abstract getDepeneds()
+	abstract getProvides()
 
-			status = unit.execute()
-			if (status is not success) {
-				return { FAILURE, "Dependency failed to build", status }
-			}
-		}
-
-		status = this.build()
-		if (status is not success) {
-			return { FAILURE, "Failed to build", status }
-		}
-	}
-
-	abstract build()
+	abstract provide()
 }

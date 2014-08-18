@@ -43,7 +43,7 @@ class Node():
         if not os.path.exists(self.path):
             raise FileNotExistsError(self.path)
         elif os.path.abspath(self.path) != self.path:
-            raise ValueError("filename cannot be used in an absolute path, or includes more than one path element: "+str(filename))
+            raise ValueError("Path is not absolute: "+str(filename))
 
         if os.path.islink(self.path):
             # resolve symbolic link

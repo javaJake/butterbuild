@@ -19,6 +19,12 @@ def split_path(path, debug=False):
 def get_root():
     return os.path.abspath(os.sep)
 
+def path_to_node(rootnode, pathstr):
+    node = rootnode
+    for part in split_path(os.path.abspath(pathstr)):
+        node = node.getChild(part)
+    return node
+
 class FileNotExistsError(Exception):
     pass
 
@@ -71,6 +77,16 @@ class Node():
                     self.__children[filename] = Node(self.root, self, filename)
 
         return self.__children[filename]
+    
+    def getChildren(self):
+        if self.__target != None:
+            return self.__target.getChildren()
+
+        childrenList = []
+        if os.path.isdir(self.path):
+            for filename in os.listdir(self.path):
+                childrenList.append(self.getChild(filename))
+        return childrenList
 
     def getMeta(self, key):
         if not key in self.__metadata:

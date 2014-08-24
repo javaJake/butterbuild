@@ -1,1 +1,1 @@
-__all__ = ["fs"]
+__all__ = ["fs", "sourcedir"]

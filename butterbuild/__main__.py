@@ -6,6 +6,7 @@ import os
 from unit import java
 from services.fs import split_path, path_to_node, Node
 from services.sourcedir import SourceDir
+from services.depgraph import DepGraph
     
 parser = argparse.ArgumentParser(description='Build stuff')
 parser.add_argument('source', metavar='source', help='The source')
@@ -17,4 +18,4 @@ rootnode = Node(None, None, '/')
 sourcenode = path_to_node(rootnode, args.source)
 
 sourcedir = SourceDir(sourcenode, [java])
-print([unit.node.path for unit in sourcedir.units])
+depgraph = DepGraph(sourcedir)

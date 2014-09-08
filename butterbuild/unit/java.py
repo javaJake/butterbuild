@@ -19,7 +19,7 @@ class Java:
         self.node = node
         self.provides = []
         self.depends = []
-        self.name = node.filename[:-1*node.filename.rfind('.java')-1]
+        self.name = node.filename[:-1*node.filename.rfind('.java')-4]
         with open(node.path) as f:
             for line in f:
                 pkg = Java._pkg_re.search(line)

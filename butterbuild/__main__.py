@@ -19,3 +19,12 @@ sourcenode = path_to_node(rootnode, args.source)
 
 sourcedir = SourceDir(sourcenode, [java])
 depgraph = DepGraph(sourcedir)
+groupidstack = depgraph.groupstack.keys()
+groupidstack.reverse()
+for groupid in groupidstack:
+    print '>>> Compile:'
+    units = []
+    for provide in depgraph.groupstack[groupid]:
+	units.extend(sourcedir.providers[provide])
+    print('classpaths: ' + str([unit.classpath.path for unit in units]))
+    print('java files: ' + str([unit.node.path for unit in units]))

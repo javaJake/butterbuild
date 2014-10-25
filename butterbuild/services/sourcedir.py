@@ -17,3 +17,4 @@ class SourceDir():
                     self.providers[provide].append(unit)
         for child in node.getChildren():
             self._buildUnits(child)
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

@@ -1,6 +1,7 @@
 import fnmatch
 import os
 import re
+import subprocess
 
 from services.fs import Node
 
@@ -48,8 +49,15 @@ class Java:
 		raise Exception('package decleration "'+str(pkg)+'" invalid for directory "'+str(pkgnode.filename)+'"; classpath calculation failed: '+self.node.path)
 	self.classpath = pkgnode.parent
 
+    def compile(self):
+	args = ['javac', '-cp']
+	args.append(self.classpath.path)
+	args.append(self.node.path)
+	subprocess.call(args)
+
     def getProvides(self):
         return self.provides
 
     def getDepends(self):
         return self.depends
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

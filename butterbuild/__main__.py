@@ -17,7 +17,9 @@ args = parser.parse_args()
 rootnode = Node(None, None, '/')
 sourcenode = path_to_node(rootnode, args.source)
 
+print '>>> Loading source'
 sourcedir = SourceDir(sourcenode, [java])
+print '>>> Calculating depgraph'
 depgraph = DepGraph(sourcedir)
 groupidstack = depgraph.groupstack.keys()
 groupidstack.reverse()
@@ -25,6 +27,7 @@ for groupid in groupidstack:
     print '>>> Compile:'
     units = []
     for provide in depgraph.groupstack[groupid]:
-	units.extend(sourcedir.providers[provide])
+        units.extend(sourcedir.providers[provide])
     print('classpaths: ' + str([unit.classpath.path for unit in units]))
     print('java files: ' + str([unit.node.path for unit in units]))
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

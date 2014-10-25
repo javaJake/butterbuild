@@ -1,14 +1,21 @@
 from collections import deque
+import itertools
 
 class CompilationGroup():
 
-    def __init__(self):
-	self.units = []
+    def __init__(self, units=[]):
+	self.units = {}
+	self.depends = []
+	self.addUnits(units)
+	
+    def addUnits(self, units):
+	self.units.update(dict([ (unit.name, unit) for unit in units]))
+	self.depends.extend(list(itertools.chain.from_iterable([unit.depends for unit in units])))
 
 class DepGraph():
 
     def __init__(self, sourcedir):
-	self.debug = False
+	self.debug = True
 	self.sourcedir = sourcedir
 	self.groupstack = {}
 	self._providetogroup = {}
@@ -41,18 +48,19 @@ class DepGraph():
 		    groupid = self._nextgroupid
 		    self._nextgroupid+=1
 
-		    collapsablegroupids = [] # dict guarantees uniqueness; value doesn't matter
-		    newgroup = []
+		    newgroup = CompilationGroup()
 		    for cycleMember in cycle:
 			if cycleMember in self._providetogroup:
 			    oldgroupid = self._providetogroup[cycleMember]
 			    oldgroup = self.groupstack[oldgroupid]
-			    newgroup.extend(oldgroup)
-			    for oldprovide in oldgroup:
-				self._providetogroup.pop(oldprovide)
+			    print ('del group: '+str(oldgroupid))
+			    newgroup.addUnits(oldgroup.units)
+			    for oldprovidelist in [groupunit.provides for groupunit in oldgroup.units]:
+				for oldprovide in oldprovidelist:
+				    self._providetogroup.pop(oldprovide)
 			    self.groupstack.pop(oldgroupid)
 			else:
-			    newgroup.append(cycleMember)
+			    newgroup.addUnits(self.sourcedir.providers[cycleMember])
 		    self._addToGroup(newgroup, groupid)
 		else:
 		    if self.debug: print(depend + ' is not cycled')
@@ -60,7 +68,7 @@ class DepGraph():
 	# Depth-"after" search
 	if self.debug: print(provide + ' initiating depth search')
 	if provide not in self._providetogroup:
-	    self._addToGroup([provide], self._nextgroupid)
+	    self._addToGroup(CompilationGroup(self.sourcedir.providers[provide]), self._nextgroupid)
 	    self._nextgroupid+=1
 	depthstack.append(provide)
 	for unit in self.sourcedir.providers[provide]:
@@ -73,11 +81,13 @@ class DepGraph():
 
     def _addToGroup(self, newgroup, groupid = -1):
 	if groupid in self.groupstack:
-	    self.groupstack[groupid].extend(newgroup)
+	    self.groupstack[groupid].addUnits(newgroup.units)
 	else:
 	    self.groupstack[groupid] = newgroup
 	if self.debug: print('new group: ' + str(groupid) + ': ' + str(self.groupstack[groupid]))
-	for provide in newgroup:
+	for provide in newgroup.units.viewvalues():
+	    print provide
 	    if provide in self._providetogroup:
-		raise Exception('provide already exists in a compile group: ' + provide)
+	       raise Exception('provide already exists in a compile group: ' + provide)
 	    self._providetogroup[provide] = groupid
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

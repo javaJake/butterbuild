@@ -102,3 +102,4 @@ class Node():
             return self.__target.setMeta(key, value)
 
         self.__metadata[key] = value
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

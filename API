@@ -1,6 +1,52 @@
-unit: {
-	abstract getDepeneds()
-	abstract getProvides()
+new file:
+	detect unit type
+	invalidate built cache
+	register unit
+change file:
+	invalidate built cache
+	reregister unit
+delete file:
+	invalidate built cache
+	deregister unit
 
-	abstract provide()
-}
+sourcedir:
+	watch new file:
+		run new file routine
+	watch change file:
+		run change file routine
+	watch delete file:
+		run delete file routine
+
+buildqueue:
+	watch register unit:
+		add to dependency->unit graph
+		add to unbuiltdepcount->unit graph
+		notify dep change
+	watch reregister unit:
+		rewrite dependency->unit graph
+		update unbuiltdepcount->unit graph
+		notify dep change
+	watch unregister unit:
+		remove dependency->unit graph
+		remove unbuiltdepcount->unit graph
+		notify dep change
+	watch dep change:
+		if depcount(0) units available:
+			request build for depcount(0) units
+			if successful:
+				update unbuiltdepcount->unit graph
+				notify dep change
+			else:
+				pause until next dep change
+		elseif units available:
+			warn about circular dependency
+		else:
+			pause until next dep change
+	watch build done:
+		
+
+buildserver:
+	watch request build:
+		cancel running build if running
+		build units
+		notify build done(with status)

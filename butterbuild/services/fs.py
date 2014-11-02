@@ -6,7 +6,7 @@ def split_path(path, debug=False):
     parts = []
     while True:
         newpath, tail = os.path.split(path)
-        if debug: print repr(path), (newpath, tail)
+        if debug: print(repr(path), (newpath, tail))
         if newpath == path:
             assert not tail
             if path: parts.append(path)

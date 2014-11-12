@@ -23,5 +23,9 @@ eventrouter = EventRouter()
 
 print('>>> Loading source')
 sourcedir = SourceDir(sourcenode, eventrouter, [java])
-sourcedirThread = Thread(target=sourcedir)
-sourcedirThread.start()
+sourcedir.waitIdle()
+print('>>> Closing')
+
+sourcedir.stop()
+eventrouter.stop()
+

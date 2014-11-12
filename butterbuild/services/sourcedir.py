@@ -1,23 +1,30 @@
-class SourceDir(object):
+from threading import Event, Thread
+from services.events import EventHandler
+import queue
+
+class SourceDir(EventHandler):
 
     def __init__(self, node, eventrouter, unitTypes):
+        super(SourceDir, self).__init__()
         self.node = node
         self.eventrouter = eventrouter
         self.unitTypes = unitTypes
         self.units = []
         self.providers = {}
+        self.eventrouter.add(self, 'newfile')
 
-    def __call__(self):
-        self._buildUnits(self.node)
+        # Initialized. Notify world.
+        self.eventrouter.fire(self, 'newfile', self.node)
 
-    def _buildUnits(self, node):
-        for unitType in self.unitTypes:
-            unit = unitType.getUnit(node)
-            if unit:
-                for provide in unit.provides:
-                    if provide not in self.providers:
-                        self.providers[provide] = []
-                    self.providers[provide].append(unit)
+    def _handle(self, event, sender, eargs):
+        node = eargs
         for child in node.getChildren():
-            self._buildUnits(child)
+            for unitType in self.unitTypes:
+                unit = unitType.getUnit(node)
+                if unit:
+                    for provide in unit.provides:
+                        if provide not in self.providers:
+                            self.providers[provide] = []
+                        self.providers[provide].append(unit)
+            self.eventrouter.fire(self, 'newfile', child)
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

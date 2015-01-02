@@ -11,20 +11,21 @@ class SourceDir(EventHandler):
         self.unitTypes = unitTypes
         self.units = []
         self.providers = {}
-        self.eventrouter.add(self, 'newfile')
+        self.eventrouter.add(self, 'unit')
 
         # Initialized. Notify world.
-        self.eventrouter.fire(self, 'newfile', self.node)
+        self.eventrouter.fire(self, 'unit', ('new', self.node))
 
     def _handle(self, event, sender, eargs):
-        node = eargs
-        for child in node.getChildren():
-            for unitType in self.unitTypes:
-                unit = unitType.getUnit(node)
-                if unit:
-                    for provide in unit.provides:
-                        if provide not in self.providers:
-                            self.providers[provide] = []
-                        self.providers[provide].append(unit)
-            self.eventrouter.fire(self, 'newfile', child)
+        eventType, node = eargs
+        if eventType is 'new':
+            for child in node.getChildren():
+                for unitType in self.unitTypes:
+                    unit = unitType.getUnit(node)
+                    if unit:
+                        for provide in unit.provides:
+                            if provide not in self.providers:
+                                self.providers[provide] = []
+                            self.providers[provide].append(unit)
+                self.eventrouter.fire(self, 'unit', ('new', child))
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
